@@ -9,5 +9,6 @@
 1.0.0
 
 ### License
-Copyright © 2022 Chamal Peiris. All Rights Reserved. <br>
+Copyright © 2022 DEP8. All Rights Reserved. <br>qq
+
 This project is licensed under the [MIT](LICENSE.txt) License.

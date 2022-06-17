@@ -6,57 +6,47 @@ import lk.ijse.dep8.tasks.entity.User;
 import lk.ijse.dep8.tasks.service.custom.UserService;
 import lk.ijse.dep8.tasks.service.exception.FailedExecutionException;
 import lk.ijse.dep8.tasks.service.util.EntityDTOMapper;
-import lk.ijse.dep8.tasks.service.util.ExecutionContext;
-import lk.ijse.dep8.tasks.service.util.JNDIConnectionPool;
+import lk.ijse.dep8.tasks.service.util.HibernateUtil;
+import lk.ijse.dep8.tasks.util.JPAUtil;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.persistence.EntityManager;
 import javax.servlet.http.Part;
-import javax.sql.DataSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
+
 @Scope("prototype")
 @Component
 public class UserServiceImpl implements UserService {
-
+    private final Logger logger = Logger.getLogger(UserServiceImpl.class.getName());
     @Autowired
     private UserDAO userDAO;
 
-
-
-    private DataSource pool;
-
-    public UserServiceImpl() {
-        pool = JNDIConnectionPool.getInstance().getDataSource();
-    }
-
-    private final Logger logger = Logger.getLogger(UserServiceImpl.class.getName());
-
-    public boolean existsUser( String userIdOrEmail)  {
-        try (Connection connection = pool.getConnection()) {
-
+    public boolean existsUser(String userIdOrEmail) {
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            userDAO.setEntityManager(em);
             return userDAO.existsUserByEmailOrId(userIdOrEmail);
-        } catch (SQLException t) {
-            throw new FailedExecutionException("Failed to check the existence", t);
+        } finally {
+            em.close();
         }
     }
 
     public UserDTO registerUser(Part picture,
                                 String appLocation,
-                                UserDTO user)  {
-        Connection connection = null;
+                                UserDTO user) {
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
-            connection = pool.getConnection();
-            connection.setAutoCommit(false);
+            em.getTransaction().begin();
             user.setId(UUID.randomUUID().toString());
 
             if (picture != null) {
@@ -64,7 +54,7 @@ public class UserServiceImpl implements UserService {
             }
             user.setPassword(DigestUtils.sha256Hex(user.getPassword()));
 
-
+            userDAO.setEntityManager(em);
             // DTO -> Entity
             User userEntity = EntityDTOMapper.getUser(user);
             User savedUser = userDAO.save(userEntity);
@@ -81,35 +71,36 @@ public class UserServiceImpl implements UserService {
                 picture.write(picturePath);
             }
 
-            connection.commit();
+            em.getTransaction().commit();
             return user;
         } catch (Throwable t) {
-            if (connection != null)
-            ExecutionContext.execute(connection::rollback);
+            if (em != null && em.getTransaction() != null) {
+                em.getTransaction().rollback();
+            }
             throw new FailedExecutionException("Failed to save the user", t);
         } finally {
-            if (connection != null){
-                Connection tempConnection = connection;
-                ExecutionContext.execute(() -> tempConnection.setAutoCommit(true));
-                ExecutionContext.execute(connection::close);
-            }
+            em.close();
         }
     }
 
-    public UserDTO getUser(String userIdOrEmail)  {
-        try (Connection connection = pool.getConnection()) {
-
+    public UserDTO getUser(String userIdOrEmail) {
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            userDAO.setEntityManager(em);
             Optional<User> userWrapper = userDAO.findUserByIdOrEmail(userIdOrEmail);
             return EntityDTOMapper.getUserDTO(userWrapper.orElse(null));
-        } catch (SQLException t) {
-            throw new FailedExecutionException("Failed to fetch the user", t);
+        } finally {
+            em.close();
         }
     }
 
-    public void deleteUser(String userId, String appLocation)  {
-        try (Connection connection = pool.getConnection()) {
-
+    public void deleteUser(String userId, String appLocation) {
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            em.getTransaction().begin();
+            userDAO.setEntityManager(em);
             userDAO.deleteById(userId);
+            em.getTransaction().commit();
 
             new Thread(() -> {
                 Path imagePath = Paths.get(appLocation, "uploads",
@@ -120,22 +111,24 @@ public class UserServiceImpl implements UserService {
                     logger.warning("Failed to delete the image: " + imagePath.toAbsolutePath());
                 }
             }).start();
-        }catch (SQLException e){
-            throw new FailedExecutionException("Failed to delete the user", e);
+        } catch (Throwable t) {
+            if (em != null && em.getTransaction() != null) em.getTransaction().rollback();
+            throw new FailedExecutionException("Failed to delete the user", t);
+        } finally {
+            em.close();
         }
 
     }
 
     public void updateUser(UserDTO user, Part picture,
                            String appLocation) {
-        Connection connection = null;
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
-            connection = pool.getConnection();
-            connection.setAutoCommit(false);
+            em.getTransaction().begin();
 
             user.setPassword(DigestUtils.sha256Hex(user.getPassword()));
 
-
+            userDAO.setEntityManager(em);
 
             // Fetch the current user
             User userEntity = userDAO.findById(user.getId()).get();
@@ -160,17 +153,12 @@ public class UserServiceImpl implements UserService {
                 Files.deleteIfExists(picturePath);
             }
 
-            connection.commit();
+            em.getTransaction().commit();
         } catch (Throwable e) {
-            if (connection != null)
-            ExecutionContext.execute(connection::rollback);
+            if (em != null && em.getTransaction() != null) em.getTransaction().rollback();
             throw new FailedExecutionException("Failed to update the user", e);
         } finally {
-            if (connection != null){
-                Connection tempConnection = connection;
-                ExecutionContext.execute(() -> tempConnection.setAutoCommit(true));
-                ExecutionContext.execute(connection::close);
-            }
+            em.close();
         }
     }
 

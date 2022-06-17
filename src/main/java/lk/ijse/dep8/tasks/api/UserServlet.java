@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 @WebServlet(name = "UserServlet")
 public class UserServlet extends HttpServlet2 {
 
+
     private final Logger logger = Logger.getLogger(UserServlet.class.getName());
 
     private UserDTO getUser(HttpServletRequest req) {
@@ -29,8 +30,9 @@ public class UserServlet extends HttpServlet2 {
 
         String userId = req.getPathInfo().replaceAll("/", "");
 
-        try  {
-            UserService userService =((ApplicationContext) (getServletContext().getAttribute("ioc"))).getBean(UserService.class);
+        try {
+            UserService userService = ((ApplicationContext) getServletContext().getAttribute("ioc"))
+                    .getBean(UserService.class);
             if (!userService.existsUser(userId)) {
                 throw new ResponseStatusException(404, "Invalid user id");
             } else {
@@ -72,7 +74,8 @@ public class UserServlet extends HttpServlet2 {
                 pictureUrl += "/uploads/" + user.getId();
             }
 
-            UserService userService =((ApplicationContext) (getServletContext().getAttribute("ioc"))).getBean(UserService.class);
+            UserService userService = ((ApplicationContext) getServletContext().getAttribute("ioc"))
+                    .getBean(UserService.class);
             userService.updateUser(new UserDTO(user.getId(), name, user.getEmail(), password, pictureUrl),
                     picture, getServletContext().getRealPath("/"));
 
@@ -87,8 +90,9 @@ public class UserServlet extends HttpServlet2 {
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         UserDTO user = getUser(req);
-        try  {
-            UserService userService =((ApplicationContext) (getServletContext().getAttribute("ioc"))).getBean(UserService.class);
+        try {
+            UserService userService = ((ApplicationContext) getServletContext().getAttribute("ioc"))
+                    .getBean(UserService.class);
             userService.deleteUser(user.getId(),
                     getServletContext().getRealPath("/"));
             resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -132,7 +136,8 @@ public class UserServlet extends HttpServlet2 {
         }
 
         try {
-            UserService userService =((ApplicationContext) (getServletContext().getAttribute("ioc"))).getBean(UserService.class);
+            UserService userService = ((ApplicationContext) getServletContext().getAttribute("ioc"))
+                    .getBean(UserService.class);
             if (userService.existsUser(email)) {
                 throw new ResponseStatusException(HttpServletResponse.SC_CONFLICT, "A user has been already registered with this email");
             }
