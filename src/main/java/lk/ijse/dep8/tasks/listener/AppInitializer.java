@@ -8,7 +8,7 @@ import javax.servlet.ServletContextListener;
 
 public class AppInitializer implements ServletContextListener {
 
-    private AnnotationConfigApplicationContext ctx;
+    private volatile AnnotationConfigApplicationContext ctx;
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
