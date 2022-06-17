@@ -3,12 +3,16 @@ package lk.ijse.dep8.tasks.dao.custom.impl;
 import lk.ijse.dep8.tasks.dao.custom.UserDAO;
 import lk.ijse.dep8.tasks.dao.exception.DataAccessException;
 import lk.ijse.dep8.tasks.entity.User;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Scope("prototype")
+@Component
 public class UserDAOImpl implements UserDAO {
 
     private final Connection connection;

@@ -1,6 +1,5 @@
 package lk.ijse.dep8.tasks.service.custom.impl;
 
-import lk.ijse.dep8.tasks.dao.DAOFactory;
 import lk.ijse.dep8.tasks.dao.custom.UserDAO;
 import lk.ijse.dep8.tasks.dto.UserDTO;
 import lk.ijse.dep8.tasks.entity.User;
@@ -10,6 +9,9 @@ import lk.ijse.dep8.tasks.service.util.EntityDTOMapper;
 import lk.ijse.dep8.tasks.service.util.ExecutionContext;
 import lk.ijse.dep8.tasks.service.util.JNDIConnectionPool;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.http.Part;
 import javax.sql.DataSource;
@@ -22,8 +24,14 @@ import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
-
+@Scope("prototype")
+@Component
 public class UserServiceImpl implements UserService {
+
+    @Autowired
+    private UserDAO userDAO;
+
+
 
     private DataSource pool;
 
@@ -35,7 +43,7 @@ public class UserServiceImpl implements UserService {
 
     public boolean existsUser( String userIdOrEmail)  {
         try (Connection connection = pool.getConnection()) {
-            UserDAO userDAO = DAOFactory.getInstance().getDAO(connection, DAOFactory.DAOTypes.USER);
+
             return userDAO.existsUserByEmailOrId(userIdOrEmail);
         } catch (SQLException t) {
             throw new FailedExecutionException("Failed to check the existence", t);
@@ -56,7 +64,7 @@ public class UserServiceImpl implements UserService {
             }
             user.setPassword(DigestUtils.sha256Hex(user.getPassword()));
 
-            UserDAO userDAO =  DAOFactory.getInstance().getDAO(connection, DAOFactory.DAOTypes.USER);
+
             // DTO -> Entity
             User userEntity = EntityDTOMapper.getUser(user);
             User savedUser = userDAO.save(userEntity);
@@ -90,7 +98,7 @@ public class UserServiceImpl implements UserService {
 
     public UserDTO getUser(String userIdOrEmail)  {
         try (Connection connection = pool.getConnection()) {
-            UserDAO userDAO = DAOFactory.getInstance().getDAO(connection, DAOFactory.DAOTypes.USER);
+
             Optional<User> userWrapper = userDAO.findUserByIdOrEmail(userIdOrEmail);
             return EntityDTOMapper.getUserDTO(userWrapper.orElse(null));
         } catch (SQLException t) {
@@ -100,7 +108,7 @@ public class UserServiceImpl implements UserService {
 
     public void deleteUser(String userId, String appLocation)  {
         try (Connection connection = pool.getConnection()) {
-            UserDAO userDAO = DAOFactory.getInstance().getDAO(connection, DAOFactory.DAOTypes.USER);
+
             userDAO.deleteById(userId);
 
             new Thread(() -> {
@@ -127,7 +135,7 @@ public class UserServiceImpl implements UserService {
 
             user.setPassword(DigestUtils.sha256Hex(user.getPassword()));
 
-            UserDAO userDAO =  DAOFactory.getInstance().getDAO(connection, DAOFactory.DAOTypes.USER);
+
 
             // Fetch the current user
             User userEntity = userDAO.findById(user.getId()).get();

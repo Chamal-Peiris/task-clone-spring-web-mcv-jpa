@@ -3,22 +3,16 @@ package lk.ijse.dep8.tasks.api;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
 import lk.ijse.dep8.tasks.dto.UserDTO;
-import lk.ijse.dep8.tasks.service.ServiceFactory;
-import lk.ijse.dep8.tasks.service.SuperService;
 import lk.ijse.dep8.tasks.service.custom.UserService;
-import lk.ijse.dep8.tasks.service.custom.impl.UserServiceImpl;
 import lk.ijse.dep8.tasks.util.HttpServlet2;
 import lk.ijse.dep8.tasks.util.ResponseStatusException;
 
-import javax.annotation.Resource;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
-import javax.sql.DataSource;
 import java.io.IOException;
-import java.sql.Connection;
 import java.util.logging.Logger;
 
 @WebServlet(name = "UserServlet")
