@@ -9,17 +9,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.sql.Connection;
 
 @Scope("prototype")
 @Repository
 public class QueryDAOImpl implements QueryDAO {
 
-    private final EntityManager em;
-
-    public QueryDAOImpl(EntityManager em) {
-        this.em = em;
-    }
+    @PersistenceContext
+    private EntityManager em;
 
     @Override
     public CustomEntity getTaskListInformation(int taskListId) {

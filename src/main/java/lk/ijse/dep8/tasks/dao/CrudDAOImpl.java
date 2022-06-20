@@ -4,6 +4,7 @@ import lk.ijse.dep8.tasks.entity.SuperEntity;
 import org.hibernate.Session;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
@@ -14,13 +15,14 @@ public abstract class CrudDAOImpl<T extends SuperEntity, ID extends Serializable
 
 
 
+
     private final Class<T> entityClsObj;
+    @PersistenceContext
     protected EntityManager em;
 
     public CrudDAOImpl() {
         entityClsObj = (Class<T>) (((ParameterizedType) (this.getClass().getGenericSuperclass())).getActualTypeArguments()[0]);
     }
-
     @Override
     public boolean existsById(ID pk) {
         return findById(pk).isPresent();

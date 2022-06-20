@@ -2,7 +2,6 @@ package lk.ijse.dep8.tasks.dao.custom.impl;
 
 import lk.ijse.dep8.tasks.entity.TaskList;
 import lk.ijse.dep8.tasks.entity.User;
-import lk.ijse.dep8.tasks.service.util.HibernateUtil;
 import org.hibernate.Session;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
