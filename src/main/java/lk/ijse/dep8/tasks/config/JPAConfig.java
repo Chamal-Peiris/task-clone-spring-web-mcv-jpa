@@ -3,10 +3,12 @@ package lk.ijse.dep8.tasks.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.jca.support.LocalConnectionFactoryBean;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jndi.JndiObjectFactoryBean;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -17,8 +19,8 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import javax.activation.DataSource;
 import javax.persistence.EntityManagerFactory;
+import javax.sql.DataSource;
 import java.util.Properties;
 
 
@@ -26,6 +28,7 @@ import java.util.Properties;
 @Configuration
 @PropertySource("classpath:application.properties")
 @PropertySource("classpath:application-prod.properties")
+@PropertySource("classpath:application-dev.properties")
 @EnableTransactionManagement
 public class JPAConfig {
 
@@ -55,6 +58,7 @@ public class JPAConfig {
         return jpaVendorAdapter;
     }
 
+    @Profile("!test")
     @Bean
     public JndiObjectFactoryBean dataSource() {
         JndiObjectFactoryBean jndiDataSource = new JndiObjectFactoryBean();
@@ -77,5 +81,15 @@ public class JPAConfig {
     @Bean
     public static PersistenceExceptionTranslationPostProcessor persistenceExceptionTranslationPostProcessor(){
         return new PersistenceExceptionTranslationPostProcessor();
+    }
+
+    //for testing
+    @Bean("dataSource")
+    @Profile("test")
+    public DataSource dataSourceForTesting(){
+        DriverManagerDataSource dmds = new DriverManagerDataSource();
+        dmds.setDriverClassName(env.getRequiredProperty("javax.persistence.jdbc.driver"));
+        dmds.setUrl(env.getRequiredProperty("javax.persistence.jdbc.url"));
+        return dmds;
     }
 }
