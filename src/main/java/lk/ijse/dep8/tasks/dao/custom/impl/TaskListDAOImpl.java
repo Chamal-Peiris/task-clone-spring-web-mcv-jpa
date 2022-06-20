@@ -9,11 +9,13 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.EntityManager;
+
 @Scope("prototype")
 @Repository
 public class TaskListDAOImpl extends CrudDAOImpl<TaskList, Integer> implements TaskListDAO {
 
-    public TaskListDAOImpl(@Nullable Session session) {
-        this.session = session;
+    public TaskListDAOImpl(EntityManager em) {
+        this.em = em;
     }
 }

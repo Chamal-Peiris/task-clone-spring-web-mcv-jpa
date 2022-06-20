@@ -18,9 +18,10 @@ import java.util.Optional;
 @Repository
 public class UserDAOImpl extends CrudDAOImpl<User, String> implements UserDAO {
 
-    public UserDAOImpl(@Nullable EntityManager em) {
+    public UserDAOImpl(EntityManager em) {
         this.em = em;
     }
+
 
     @Override
     public boolean existsUserByEmailOrId(String emailOrId) {

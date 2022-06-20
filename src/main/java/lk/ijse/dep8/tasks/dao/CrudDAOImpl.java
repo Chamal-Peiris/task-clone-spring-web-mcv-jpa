@@ -13,16 +13,12 @@ public abstract class CrudDAOImpl<T extends SuperEntity, ID extends Serializable
         implements CrudDAO<T, ID> {
 
 
+
     private final Class<T> entityClsObj;
     protected EntityManager em;
 
     public CrudDAOImpl() {
         entityClsObj = (Class<T>) (((ParameterizedType) (this.getClass().getGenericSuperclass())).getActualTypeArguments()[0]);
-    }
-
-    @Override
-    public void setEntityManager(EntityManager entityManager) {
-        this.em = entityManager;
     }
 
     @Override
