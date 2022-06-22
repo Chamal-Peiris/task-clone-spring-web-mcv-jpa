@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-@Scope("prototype")
+
 @Component
 @Transactional
 public class UserServiceImpl implements UserService {

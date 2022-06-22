@@ -12,7 +12,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.Connection;
 
-@Scope("prototype")
+
 @Repository
 public class QueryDAOImpl implements QueryDAO {
 

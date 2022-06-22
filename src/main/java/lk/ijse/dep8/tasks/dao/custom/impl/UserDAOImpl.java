@@ -14,7 +14,7 @@ import javax.persistence.NoResultException;
 import java.util.List;
 import java.util.Optional;
 
-@Scope("prototype")
+
 @Repository
 public class UserDAOImpl extends CrudDAOImpl<User, String> implements UserDAO {
 

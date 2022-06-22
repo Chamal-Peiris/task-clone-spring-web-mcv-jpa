@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 
-@Scope("prototype")
+
 @Repository
 public class TaskDAOImpl extends CrudDAOImpl<Task, Integer> implements TaskDAO {
 
