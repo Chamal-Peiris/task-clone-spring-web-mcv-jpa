@@ -28,7 +28,7 @@ import java.util.Properties;
 @Configuration
 @PropertySource("classpath:application.properties")
 @PropertySource("classpath:application-prod.properties")
-@PropertySource("classpath:application-dev.properties")
+
 @EnableTransactionManagement
 public class JPAConfig {
 
