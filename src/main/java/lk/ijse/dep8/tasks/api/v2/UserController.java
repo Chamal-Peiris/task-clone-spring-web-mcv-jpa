@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
@@ -19,6 +20,8 @@ public class UserController {
 
 
     private final UserService userService;
+    @Autowired
+    private ServletContext servletContext;
 
     public UserController(UserService userService){
         this.userService=userService;
@@ -47,11 +50,21 @@ public class UserController {
                 request.getServletContext().getRealPath("/"), user);
 
     }
-    @DeleteMapping
-    public void deleteUser(){
+
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping(path = "/{id:[A-Fa-f0-9\\-]{36}}")
+    public void deleteUser(@PathVariable String userId ){
+
+        if(userService.existsUser(userId)){
+            userService.deleteUser(userId,servletContext.getRealPath("/"));
+        }else{
+            throw new ResponseStatusException(404,"Invalid user id");
+        }
 
     }
-    @PatchMapping
+    @PatchMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE,path = "/{id:[A-Fa-f0-9\\-]{36}}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateUser(){
 
     }
