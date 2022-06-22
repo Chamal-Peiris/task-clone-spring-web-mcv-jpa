@@ -1,4 +1,4 @@
-# Google Tasks Clone `Spring-Web-Mvc-And-Jpa`
+# Google Tasks Clone `Spring-Web-MVC-And-Jpa`
 
 ### REST API Documentation
 [User Service API Reference](https://documenter.getpostman.com/view/2805535/UyxnEkBp) <br>
