@@ -5,6 +5,7 @@ import lk.ijse.dep8.tasks.entity.User;
 import lk.ijse.dep8.tasks.service.custom.UserService;
 import lk.ijse.dep8.tasks.util.ResponseStatusException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,7 @@ public class UserController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE,produces = "application/json")
-    public UserDTO saveUser(String name, String email, String password, Part picture, HttpServletRequest request){
+    public UserDTO saveUser(String name, String email, String password, Part picture, HttpServletRequest request) {
         if (name == null || !name.matches("[A-Za-z ]+")) {
             throw new ResponseStatusException(HttpServletResponse.SC_BAD_REQUEST, "Invalid name or name is empty");
         } else if (email == null || !email.matches("(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])")) {
@@ -46,7 +47,7 @@ public class UserController {
         }
         UserDTO user = new UserDTO(null, name, email, password, pictureUrl);
 
-        user = userService.registerUser(picture,
+        return userService.registerUser(picture,
                 request.getServletContext().getRealPath("/"), user);
 
     }
@@ -63,11 +64,42 @@ public class UserController {
         }
 
     }
+
+
+
+
     @PatchMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE,path = "/{id:[A-Fa-f0-9\\-]{36}}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateUser(){
+    public void updateUser(@PathVariable String userId, String name, String email, String password, Part picture, HttpServletRequest request){
+        if (name == null || !name.matches("[A-Za-z ]+")) {
+            throw new ResponseStatusException(HttpServletResponse.SC_BAD_REQUEST, "Invalid name or name is empty");
+        } else if (password == null || password.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpServletResponse.SC_BAD_REQUEST, "Password can't be empty");
+        } else if (picture != null && (picture.getSize() == 0 || !picture.getContentType().startsWith("image"))) {
+            throw new ResponseStatusException(HttpServletResponse.SC_BAD_REQUEST, "Invalid picture");
+        }
+
+        String pictureUrl = null;
+        if (picture != null) {
+            pictureUrl = request.getScheme() + "://" + request.getServerName() + ":"
+                    + request.getServerPort() + request.getContextPath();
+            pictureUrl += "/uploads/" + userId;
+        }
+
+        if(!userService.existsUser(userId)){
+            throw new ResponseStatusException(404,"invalid user Id");
+        }
+
+        UserDTO user = userService.getUser(userId);
+
+        userService.updateUser(new UserDTO(user.getId(), name, user.getEmail(), password, pictureUrl),
+                picture, servletContext.getRealPath("/"));
 
     }
+
+
+
+
     @GetMapping(path = "/{id:[A-Fa-f0-9\\-]{36}}",produces = "application/json")
     public UserDTO getUser(@PathVariable String userId){
         if (!userService.existsUser(userId)) {
