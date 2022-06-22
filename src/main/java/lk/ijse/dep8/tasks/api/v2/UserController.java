@@ -5,6 +5,7 @@ import lk.ijse.dep8.tasks.entity.User;
 import lk.ijse.dep8.tasks.service.custom.UserService;
 import lk.ijse.dep8.tasks.util.ResponseStatusException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +24,8 @@ public class UserController {
         this.userService=userService;
     }
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE,produces = "application/json")
     public UserDTO saveUser(String name, String email, String password, Part picture, HttpServletRequest request){
         if (name == null || !name.matches("[A-Za-z ]+")) {
             throw new ResponseStatusException(HttpServletResponse.SC_BAD_REQUEST, "Invalid name or name is empty");
@@ -53,8 +55,12 @@ public class UserController {
     public void updateUser(){
 
     }
-    @GetMapping
-    public void getUser(){
-
+    @GetMapping(path = "/{id:[A-Fa-f0-9\\-]{36}}",produces = "application/json")
+    public UserDTO getUser(@PathVariable String userId){
+        if (!userService.existsUser(userId)) {
+            throw new ResponseStatusException(404, "Invalid user id");
+        } else {
+            return userService.getUser(userId);
+        }
     }
 }
